@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>بنك الاختبارات التفاعلي | المنصات الصحية للمبادرات</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .code-font {
+      font-family: 'Fira Code', monospace;
+      direction: ltr;
+      text-align: left;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .tab-active {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px 0 rgba(2, 132, 199, 0.35);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-800">
+
+  <!-- Header Section -->
+  <header class="bg-gradient-to-l from-sky-900 via-sky-800 to-teal-800 text-white shadow-lg sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="bg-teal-400/20 text-teal-200 border border-teal-300/30 text-xs font-bold px-2.5 py-0.5 rounded-full">
+            جامعة برج العرب التكنولوجية
+          </span>
+          <span class="bg-sky-400/20 text-sky-200 border border-sky-300/30 text-xs font-bold px-2.5 py-0.5 rounded-full">
+            100 سؤال تفاعلي
+          </span>
+        </div>
+        <h1 class="text-xl md:text-2xl font-extrabold mt-1 tracking-tight">
+          المنصات الصحية للمبادرات (Healthcare Platforms)
+        </h1>
+      </div>
+
+      <!-- Live Score & Progress Summary -->
+      <div class="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl px-4 py-2.5">
+        <div class="text-center">
+          <div class="text-xs text-sky-200">النتيجة الحالية</div>
+          <div class="text-xl font-extrabold text-amber-300" id="header-score">0 / 20</div>
+        </div>
+        <div class="h-8 w-px bg-white/20"></div>
+        <div class="text-center">
+          <div class="text-xs text-sky-200">الأسئلة المجابة</div>
+          <div class="text-xl font-extrabold text-emerald-300" id="header-answered">0 / 20</div>
+        </div>
+        <button onclick="resetCurrentQuiz()" title="إعادة الاختبار الحالي"
+          class="mr-2 bg-rose-500/80 hover:bg-rose-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition shadow-sm flex items-center gap-1 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>إعادة</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="bg-slate-900/40 border-t border-white/10">
+      <div class="max-w-6xl mx-auto px-4 py-2.5 overflow-x-auto">
+        <div class="flex gap-2 min-w-max" id="tabs-container">
+          <!-- Tabs injected by JS -->
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Quiz Container -->
+  <main class="max-w-5xl w-full mx-auto px-4 py-6 flex-1">
+    
+    <!-- Section Banner -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-lg md:text-xl font-bold text-sky-900" id="section-title">عنوان المحاضرة</h2>
+        <p class="text-sm text-slate-600 mt-1" id="section-desc">وصف المحاضرة وتوزيع الأسئلة</p>
+      </div>
+      <div class="flex flex-wrap gap-2 text-xs font-bold">
+        <span class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200">9 صح وغلط</span>
+        <span class="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-700 border border-sky-200">9 اختيار من متعدد</span>
+        <span class="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200">2 مقالي (كتابة كود)</span>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="w-full bg-slate-200 rounded-full h-2.5 mb-6 overflow-hidden">
+      <div id="progress-bar" class="bg-gradient-to-l from-teal-500 to-sky-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+    </div>
+
+    <!-- Questions List -->
+    <div id="questions-container" class="space-y-6">
+      <!-- Questions injected by JS -->
+    </div>
+
+    <!-- Bottom Final Result Card -->
+    <div class="mt-8 bg-white rounded-2xl shadow-md border border-slate-200 p-6 text-center">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">ملخص أدائك في هذا الاختبار</h3>
+      <p class="text-slate-600 text-sm mb-4">يمكنك مراجعة إجاباتك في الأعلى أو الانتقال لمحاضرة أخرى من شريط التبويبات.</p>
+      <div class="inline-flex items-center gap-6 bg-slate-50 border border-slate-200 rounded-xl px-6 py-3 mb-4">
+        <div>
+          <span class="block text-xs text-slate-500">الدرجة النهائية</span>
+          <span class="text-2xl font-extrabold text-sky-700" id="footer-score">0 / 20</span>
+        </div>
+        <div class="h-10 w-px bg-slate-200"></div>
+        <div>
+          <span class="block text-xs text-slate-500">التقدير</span>
+          <span class="text-lg font-bold text-teal-600" id="footer-grade">لم يكتمل بعد</span>
+        </div>
+      </div>
+      <div class="flex flex-wrap justify-center gap-3">
+        <button onclick="scrollToTop()" class="px-5 py-2.5 rounded-xl bg-sky-700 hover:bg-sky-800 text-white font-bold text-sm transition cursor-pointer">
+          العودة للأعلى
+        </button>
+        <button onclick="resetCurrentQuiz()" class="px-5 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-sm transition cursor-pointer">
+          إعادة تصفير الاختبار
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="bg-slate-900 text-slate-400 text-center py-4 text-xs mt-10">
+    تم التصميم للمراجعة الشاملة لمقرر المنصات الصحية للمبادرات (المحاضرات 1 إلى 4) &copy; 2026
+  </footer>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 left-5 bg-slate-900 text-white text-sm font-semibold px-4 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    تم نسخ الكود بنجاح!
+  </div>
+
+  <script>
+    // ============================================================================
+    // DATA BANK: 5 SECTIONS x 20 QUESTIONS = 100 QUESTIONS
+    // Each section has: 9 True/False, 9 MCQ, 2 Essay (Code Writing)
+    // ============================================================================
+    const quizData = {
+      lec1: {
+        title: "المحاضرة الأولى: Introduction to Web Development",
+        desc: "مفاهيم تطوير الويب، الفرق بين Front-End و Back-End، المتصفحات والـ DOM، ووسوم HTML الأساسية.",
+        questions: [
+          // 9 True / False
+          {
+            type: "tf",
+            q: "تطوير الويب (Web Development) يقتصر فقط على تصميم شكل الصفحات الثابتة ولا يشمل تطبيقات الويب التفاعلية.",
+            answer: false,
+            explanation: "خطأ: تطوير الويب يشمل إنشاء المواقع البسيطة وتطبيقات الويب التفاعلية المعقدة وإدارتها."
+          },
+          {
+            type: "tf",
+            q: "يمثل تطوير الواجهة الأمامية (Front-End) حوالي 20% فقط من إجمالي مجهود تطوير النظام، لكنه ذو قيمة عالية للمستخدم.",
+            answer: true,
+            explanation: "صحيح: Front-End يمثل 20% من المجهود، يراه المستخدم مباشرة، وقيمته الظاهرية عالية."
+          },
+          {
+            type: "tf",
+            q: "يعمل الـ API كحلقة وصل (جسر) لنقل البيانات والتواصل بين الـ Front-End والـ Back-End.",
+            answer: true,
+            explanation: "صحيح: الـ API (Application Programming Interface) يربط الواجهة الأمامية بالخلفية وقواعد البيانات."
+          },
+          {
+            type: "tf",
+            q: "تُعد لغة CSS المسؤولة عن بناء الهيكل الأساسي والمحتوى (Structure) لصفحة الويب.",
+            answer: false,
+            explanation: "خطأ: لغة HTML هي المسؤولة عن الهيكل والمحتوى، بينما CSS مسؤولة عن التنسيق والمظهر."
+          },
+          {
+            type: "tf",
+            q: "يقوم المتصفح بقراءة كود HTML وبناء شجرة كائنات تُسمى DOM (Document Object Model).",
+            answer: true,
+            explanation: "صحيح: المتصفح يفسر HTML ويبني شجرة الـ DOM ثم يطبق عليها تنسيقات CSS."
+          },
+          {
+            type: "tf",
+            q: "تُعتبر React و Angular و Vue.js من أطر العمل (Frameworks/Libraries) الخاصة بالـ Back-End.",
+            answer: false,
+            explanation: "خطأ: هذه التقنيات خاصة بالـ Front-End، بينما Django و Laravel و Express.js للـ Back-End."
+          },
+          {
+            type: "tf",
+            q: "تُستخدم قاعدة البيانات MongoDB لتخزين البيانات كـ NoSQL (وثائق) على عكس MySQL و PostgreSQL.",
+            answer: true,
+            explanation: "صحيح: MySQL و PostgreSQL قواعد بيانات علائقية (SQL)، بينما MongoDB قاعدة بيانات NoSQL."
+          },
+          {
+            type: "tf",
+            q: "وسم <h6> يُعطي أكبر حجم خط للعناوين في HTML بينما <h1> يُعطي أصغر حجم.",
+            answer: false,
+            explanation: "خطأ: العكس صحيح؛ <h1> هو العنوان الرئيسي الأكبر حجماً، و <h6> هو الأصغر."
+          },
+          {
+            type: "tf",
+            q: "الجزء الخاص بالـ Back-End يتميز بتكرار عالي في العمليات البرمجية ويمثل 80% من المجهود.",
+            answer: true,
+            explanation: "صحيح: بحسب مخطط المحاضرة الأولى، Back-End يمثل 80% من المجهود وتكراره عالي ولا يراه المستخدم."
+          },
+
+          // 9 MCQ
+          {
+            type: "mcq",
+            q: "أي من التقنيات التالية يُستخدم لإضافة التفاعلية والعمليات الديناميكية داخل المتصفح (Front-End)؟",
+            options: ["PHP", "JavaScript", "MySQL", "Apache"],
+            answer: 1,
+            explanation: "JavaScript هي لغة البرمجة التي تعمل في المتصفح لإضافة التفاعلية وتحديث المحتوى."
+          },
+          {
+            type: "mcq",
+            q: "ما هو دور خادم الويب (Web Server) مثل Apache أو Nginx؟",
+            options: [
+              "تلوين النصوص في الصفحة",
+              "استقبال طلبات HTTP من المتصفح وإرسال صفحات الويب المطلوبة",
+              "تصميم شعارات الموقع",
+              "كتابة أكواد HTML تلقائياً"
+            ],
+            answer: 1,
+            explanation: "خوادم الويب مثل Apache و Nginx و IIS تستضيف ملفات الموقع وترد على طلبات المتصفح."
+          },
+          {
+            type: "mcq",
+            q: "أي من أطر العمل التالية يُستخدم في تطوير الـ Back-End بلغة بايثون (Python)؟",
+            options: ["Laravel", "Django", "React", "Angular"],
+            answer: 1,
+            explanation: "Django و Flask من أطر عمل Python للـ Back-End، أما Laravel لـ PHP، و React/Angular للـ Front-End."
+          },
+          {
+            type: "mcq",
+            q: "ما وظيفة السطر <!DOCTYPE html> في بداية أي ملف HTML5؟",
+            options: [
+              "إنشاء عنوان للصفحة",
+              "تعريف المتصفح أن المستند مكتوب بإصدار HTML5",
+              "ربط ملف CSS بالصفحة",
+              "إضافة تعليق برمجي"
+            ],
+            answer: 1,
+            explanation: "يُخبر المتصفح بنوع وإصدار المستند (HTML5) ليقوم بعرضه بشكل قياسي سليم."
+          },
+          {
+            type: "mcq",
+            q: "أين يتم وضع المعلومات الوصفية (Metadata) وعنوان التبويب <title> في صفحة HTML؟",
+            options: ["داخل <body>", "داخل <head>", "داخل <footer>", "بعد </html>"],
+            answer: 1,
+            explanation: "قسم <head> يحتوي على المعلومات الوصفية وعنوان الصفحة وروابط التنسيق ولا يظهر محتواه داخل جسم الصفحة."
+          },
+          {
+            type: "mcq",
+            q: "ما هي التقنية المستخدمة في CSS لجعل تصميم الصفحة متجاوباً مع أحجام الشاشات المختلفة؟",
+            options: ["DOM Tree", "Media Queries", "Web Servers", "SQL Queries"],
+            answer: 1,
+            explanation: "تُستخدم Media Queries في CSS لتكييف التصميم (Responsive Design) حسب عرض الشاشة."
+          },
+          {
+            type: "mcq",
+            q: "لإنشاء قائمة مرقمة (Ordered List) في HTML نستخدم الوسم:",
+            options: ["<ul>", "<ol>", "<li>", "<dl>"],
+            answer: 1,
+            explanation: "<ol> تعني Ordered List (قائمة مرقمة 1, 2, 3)، بينما <ul> تعني Unordered List (نقطية)."
+          },
+          {
+            type: "mcq",
+            q: "كل عنصر داخل القائمة سواء كانت <ul> أو <ol> يُكتب داخل وسم:",
+            options: ["<item>", "<list>", "<li>", "<p>"],
+            answer: 2,
+            explanation: "وسم <li> (List Item) يُستخدم لتعريف كل عنصر داخل القوائم المرتبة وغير المرتبة."
+          },
+          {
+            type: "mcq",
+            q: "أي من اللغات التالية لا تُصنف كلغة برمجة Back-End؟",
+            options: ["Ruby", "Node.js", "HTML", "Java"],
+            answer: 2,
+            explanation: "HTML هي لغة توصيف (Markup Language) لبناء هيكل الواجهة الأمامية وليست لغة Back-End."
+          },
+
+          // 2 Essay (Code Writing)
+          {
+            type: "essay",
+            q: "اكتب الهيكل الأساسي الكامل لصفحة HTML5 تحتوي على عنوان للتبويب باسم (Healthcare App)، وداخل جسم الصفحة عنوان رئيسي <h1> نصه (Welcome) وفقرة <p> نصها (Digital Health Platform).",
+            placeholder: "اكتب كود HTML الكامل هنا...",
+            modelAnswer: `<!DOCTYPE html>
+<html>
+<head>
+  <title>Healthcare App</title>
+</head>
+<body>
+  <h1>Welcome</h1>
+  <p>Digital Health Platform</p>
+</body>
+</html>`
+          },
+          {
+            type: "essay",
+            q: "اكتب كود HTML لإنشاء عنوان فرعي <h2> نصه (Services)، وأسفله قائمة غير مرتبة (نقطية) تحتوي على عنصرين: (Lab Tests) و (Clinics).",
+            placeholder: "اكتب كود HTML هنا...",
+            modelAnswer: `<h2>Services</h2>
+<ul>
+  <li>Lab Tests</li>
+  <li>Clinics</li>
+</ul>`
+          }
+        ]
+      },
+
+      lec2: {
+        title: "المحاضرة الثانية: HTML5 and CSS Basics",
+        desc: "الوسائط المتعددة، الجداول، الحاويات Div و Span، الخصائص Attributes، طرق ربط CSS، والنماذج Forms.",
+        questions: [
+          // 9 True / False
+          {
+            type: "tf",
+            q: "يُستخدم وسم <audio> في HTML5 لتشغيل الملفات الصوتية مباشرة في المتصفح دون الحاجة لإضافات خارجية.",
+            answer: true,
+            explanation: "صحيح: قدمت HTML5 وسوم <audio> و <video> لتشغيل الوسائط مباشرة داخل المتصفح."
+          },
+          {
+            type: "tf",
+            q: "وسم <span> هو عنصر من نوع Block-level يبدأ دائماً في سطر جديد ويأخذ العرض الكامل للصفحة.",
+            answer: false,
+            explanation: "خطأ: <span> هو عنصر Inline يُستخدم لتجميع أجزاء صغيرة داخل السطر، بينما <div> هو Block-level."
+          },
+          {
+            type: "tf",
+            q: "الوسم <br> يُستخدم لإدراج فاصل سطر جديد وهو وسم مفرد (Empty Tag) لا يحتاج لوسم إغلاق.",
+            answer: true,
+            explanation: "صحيح: <br> ينقل النص لسطر جديد، و <hr> يرسم خطاً أفقياً، وكلاهما وسوم مفردة."
+          },
+          {
+            type: "tf",
+            q: "في الروابط <a>، استخدام الخاصية target='_blank' يؤدي إلى فتح الرابط في نفس نافذة التصفح الحالية.",
+            answer: false,
+            explanation: "خطأ: target='_blank' يفتح الرابط في تبويب أو نافذة جديدة، بينما '_self' يفتحه في نفس النافذة."
+          },
+          {
+            type: "tf",
+            q: "يمكن استخدام نفس اسم الـ id لأكثر من عنصر مختلف في نفس صفحة HTML لتطبيق نفس التنسيق.",
+            answer: false,
+            explanation: "خطأ: الـ id يجب أن يكون فريداً (Unique) لعنصر واحد فقط في الصفحة، أما class فيُستخدم لعدة عناصر."
+          },
+          {
+            type: "tf",
+            q: "يتم ربط ملف CSS خارجي (External CSS) بصفحة HTML باستخدام وسم <link> داخل قسم <head>.",
+            answer: true,
+            explanation: "صحيح: نكتب <link rel='stylesheet' href='styles.css'> داخل قسم <head>."
+          },
+          {
+            type: "tf",
+            q: "في النماذج (Forms)، لكي يتمكن المستخدم من اختيار زر Radio واحد فقط من مجموعة اختيارات، يجب أن تحمل جميعها نفس قيمة خاصية name.",
+            answer: true,
+            explanation: "صحيح: اشتراك أزرار الـ Radio في نفس الـ name يربطها كمجموعة واحدة يُختار منها خيار وحيد."
+          },
+          {
+            type: "tf",
+            q: "يسمح عنصر <input type='checkbox'> للمستخدم باختيار خيار واحد فقط ولا يمكن تحديد أكثر من مربع.",
+            answer: false,
+            explanation: "خطأ: الـ Checkbox يسمح باختيار صفر أو واحد أو أكثر من الخيارات المتاحة."
+          },
+          {
+            type: "tf",
+            q: "تُستخدم خاصية alt في وسم <img> لتوفير نص بديل يصف الصورة في حال فشل تحميلها أو لقارئات الشاشة.",
+            answer: true,
+            explanation: "صحيح: خاصية alt ضرورية لإمكانية الوصول (Accessibility) وتظهر عند تعذر تحميل الصورة."
+          },
+
+          // 9 MCQ
+          {
+            type: "mcq",
+            q: "أي من الوسوم التالية يُستخدم لتعريف خلية عنوان (Header Cell) داخل صف الجدول في HTML؟",
+            options: ["<tr>", "<td>", "<th>", "<table>"],
+            answer: 2,
+            explanation: "<th> (Table Header) يجعل النص عريضاً وفي المنتصف كعنوان عمود، بينما <td> للبيانات العادية و <tr> للصف."
+          },
+          {
+            type: "mcq",
+            q: "ما هي الطريقة الصحيحة لإضافة أيقونة مصغرة للموقع (Favicon) بجانب عنوان الصفحة في المتصفح؟",
+            options: [
+              "<img src='favicon.ico'>",
+              "<link rel='icon' type='image/x-icon' href='favicon.ico'>",
+              "<meta icon='favicon.ico'>",
+              "<icon href='favicon.ico'>"
+            ],
+            answer: 1,
+            explanation: "تُضاف الـ Favicon داخل <head> باستخدام وسم <link rel='icon' ...>."
+          },
+          {
+            type: "mcq",
+            q: "أين يتم كتابة أكواد الـ Internal CSS داخل صفحة HTML؟",
+            options: [
+              "داخل وسم <script> في <body>",
+              "داخل وسم <style> في <head>",
+              "داخل خاصية class",
+              "في ملف منفصل بامتداد .js"
+            ],
+            answer: 1,
+            explanation: "الـ Internal CSS يُكتب داخل وسم <style> الموجود في قسم <head>."
+          },
+          {
+            type: "mcq",
+            q: "ما وظيفة خاصية action في وسم <form action='/register.php'>؟",
+            options: [
+              "تحديد لون خلفية النموذج",
+              "تحديد الصفحة أو الملف في الخادم الذي سيستقبل ويعالج البيانات عند الإرسال",
+              "مسح بيانات النموذج",
+              "تحديد حجم خط الحقول"
+            ],
+            answer: 1,
+            explanation: "خاصية action تحدد مسار الملف الذي ستُرسل إليه بيانات النموذج عند الضغط على Submit."
+          },
+          {
+            type: "mcq",
+            q: "لربط وسم <label> بعنصر <input> بحيث عند الضغط على النص يتم تفعيل الحقل، يجب أن تتطابق:",
+            options: [
+              "خاصية name في label مع type في input",
+              "خاصية for في label مع id في input",
+              "خاصية value في label مع class في input",
+              "خاصية src في label مع href في input"
+            ],
+            answer: 1,
+            explanation: "يجب أن تكون قيمة attribute (for) في <label> مطابقة تماماً لقيمة (id) في <input>."
+          },
+          {
+            type: "mcq",
+            q: "أي عنصر HTML يُستخدم لإنشاء قائمة منسدلة (Drop-down List)؟",
+            options: ["<dropdown>", "<input type='list'>", "<select>", "<textarea>"],
+            answer: 2,
+            explanation: "نستخدم <select> وبداخلها عناصر <option> لإنشاء قائمة منسدلة."
+          },
+          {
+            type: "mcq",
+            q: "لجعل أحد الخيارات في القائمة المنسدلة محدداً بشكل افتراضي مسبقاً، نضيف له الخاصية:",
+            options: ["checked", "selected", "default", "active"],
+            answer: 1,
+            explanation: "تُستخدم selected داخل وسم <option>، بينما تُستخدم checked مع radio و checkbox."
+          },
+          {
+            type: "mcq",
+            q: "ما هو الوسم المستخدم لإنشاء حقل إدخال نصي متعدد الأسطر (مثل كتابة الملاحظات أو الشكوى الطبية)؟",
+            options: ["<input type='textarea'>", "<multiline>", "<textarea>", "<textbox>"],
+            answer: 2,
+            explanation: "وسم <textarea rows='...' cols='...'> يُستخدم لإدخال النصوص الطويلة متعددة الأسطر."
+          },
+          {
+            type: "mcq",
+            q: "لتطبيق تنسيق Inline CSS على فقرة <p> مباشرة، نستخدم الخاصية:",
+            options: ["class='color:red'", "css='color:red'", "style='color:red;'", "font='red'"],
+            answer: 2,
+            explanation: "الـ Inline CSS يُكتب مباشرة داخل وسم العنصر باستخدام خاصية style='...'."
+          },
+
+          // 2 Essay (Code Writing)
+          {
+            type: "essay",
+            q: "اكتب كود HTML لإنشاء جدول مكون من صفين: الصف الأول يحتوي على عناوين الأعمدة (Doctor, Specialty)، والصف الثاني يحتوي على البيانات (Dr. Ali, Cardiology).",
+            placeholder: "اكتب كود الجدول هنا...",
+            modelAnswer: `<table>
+  <tr>
+    <th>Doctor</th>
+    <th>Specialty</th>
+  </tr>
+  <tr>
+    <td>Dr. Ali</td>
+    <td>Cardiology</td>
+  </tr>
+</table>`
+          },
+          {
+            type: "essay",
+            q: "اكتب كود HTML لإنشاء نموذج (Form) يحتوي على حقل نصي لاسم المريض (Patient Name) مع Label مرتبط به، وزر إرسال (Submit).",
+            placeholder: "اكتب كود النموذج هنا...",
+            modelAnswer: `<form action="/submit.php">
+  <label for="pname">Patient Name:</label><br>
+  <input type="text" id="pname" name="pname"><br><br>
+  <input type="submit" value="Submit">
+</form>`
+          }
+        ]
+      },
+
+      lec3: {
+        title: "المحاضرة الثالثة: Introduction to CSS",
+        desc: "بنية قواعد CSS، المحددات (Selectors)، الألوان والحدود، نموذج الصندوق (Box Model)، وحالات الروابط.",
+        questions: [
+          // 9 True / False
+          {
+            type: "tf",
+            q: "تتكون قاعدة التنسيق في CSS من محدد (Selector) وكتلة تصريحات (Declaration Block) محصورة بين قوسين { }.",
+            answer: true,
+            explanation: "صحيح: الصيغة القياسية هي selector { property: value; }."
+          },
+          {
+            type: "tf",
+            q: "في CSS، المحدد p.center يقوم بتطبيق التنسيق على جميع العناصر في الصفحة التي تحمل الكلاس center.",
+            answer: false,
+            explanation: "خطأ: p.center يطبق التنسيق حصرياً على وسوم <p> التي تحمل الكلاس center فقط."
+          },
+          {
+            type: "tf",
+            q: "يُستخدم الرمز # في ملف CSS لاستدعاء عنصر يحمل خاصية id معينة.",
+            answer: true,
+            explanation: "صحيح: علامة # تُستخدم للـ id، بينما النقطة (.) تُستخدم للـ class."
+          },
+          {
+            type: "tf",
+            q: "عند استخدام خاصية margin: 10px 20px 30px 40px; فإن القيمة 20px تمثل الهامش الأيسر (Left).",
+            answer: false,
+            explanation: "خطأ: الترتيب يمشي مع عقارب الساعة: أعلى (10px)، يمين (20px)، أسفل (30px)، يسار (40px)."
+          },
+          {
+            type: "tf",
+            q: "الـ Padding هو المساحة الفارغة الموجودة خارج حدود العنصر (Border) والتي تفصله عن العناصر المجاورة.",
+            answer: false,
+            explanation: "خطأ: المساحة خارج الحدود هي Margin، أما Padding فهو المساحة الداخلية بين المحتوى والحدود."
+          },
+          {
+            type: "tf",
+            q: "يتكون نموذج الصندوق (CSS Box Model) من الداخل إلى الخارج بالترتيب: Content ثم Padding ثم Border ثم Margin.",
+            answer: true,
+            explanation: "صحيح: المحتوى في المركز، يحيط به Padding، ثم Border، وأخيراً Margin من الخارج."
+          },
+          {
+            type: "tf",
+            q: "لحساب العرض الكلي (Total Width) لعنصر في CSS، نجمع: width + left/right padding + left/right border + left/right margin.",
+            answer: true,
+            explanation: "صحيح: هذه هي المعادلة القياسية لحساب المساحة الكلية التي يشغلها العنصر أفقياً."
+          },
+          {
+            type: "tf",
+            q: "في تنسيق الروابط، يمكن كتابة قاعدة a:hover قبل a:link و a:visited دون أي مشكلة في عملها.",
+            answer: false,
+            explanation: "خطأ: من قواعد CSS الصارمة أن يأتي a:hover بعد a:link و a:visited حتى يعمل تأثير التمرير."
+          },
+          {
+            type: "tf",
+            q: "خاصية max-width تساعد في تحسين عرض العناصر على الشاشات الصغيرة ومنع ظهور شريط التمرير الأفقي.",
+            answer: true,
+            explanation: "صحيح: max-width تجعل العنصر يتقلص تلقائياً إذا كانت نافذة المتصفح أصغر من العرض المحدد."
+          },
+
+          // 9 MCQ
+          {
+            type: "mcq",
+            q: "ما هو المحدد الصحيح لتجميع العناصر h1 و h2 و p لتأخذ نفس التنسيق في قاعدة CSS واحدة؟",
+            options: ["h1 + h2 + p", "h1, h2, p", "h1 h2 p", "h1.h2.p"],
+            answer: 1,
+            explanation: "نستخدم الفاصلة (,) لتجميع عدة محددات (Grouping Selector) تشترك في نفس الخصائص."
+          },
+          {
+            type: "mcq",
+            q: "إذا كان لعنصر <div> القيم التالية: width: 300px; padding: 25px; border: 10px solid black; margin: 15px; فكم يساوي العرض الكلي (Total Width)؟",
+            options: ["350px", "380px", "400px", "365px"],
+            answer: 2,
+            explanation: "الحساب: 300 + (25×2) + (10×2) + (15×2) = 300 + 50 + 20 + 30 = 400px."
+          },
+          {
+            type: "mcq",
+            q: "ماذا تعني كتابة الخاصية المختصرة padding: 25px 50px; ؟",
+            options: [
+              "أعلى وأسفل 25px، ويمين ويسار 50px",
+              "يمين ويسار 25px، وأعلى وأسفل 50px",
+              "أعلى 25px، وباقي الجوانب 50px",
+              "يسار 25px، وأسفل 50px"
+            ],
+            answer: 0,
+            explanation: "عند كتابة قيمتين فقط: الأولى للأعلى والأسفل (Top/Bottom) والثانية لليمين واليسار (Left/Right)."
+          },
+          {
+            type: "mcq",
+            q: "أي من الحالات التالية تمثل شكل الرابط في اللحظة التي ينقر فيها المستخدم عليه بالماوس؟",
+            options: ["a:link", "a:visited", "a:hover", "a:active"],
+            answer: 3,
+            explanation: "a:active تمثل لحظة النقر الفعلي على الرابط، ويجب أن تأتي بعد a:hover."
+          },
+          {
+            type: "mcq",
+            q: "لرسم إطار حول عنصر بسمك 2px ونوع خط متصل (solid) ولون أحمر (Tomato) باستخدام الاختصار، نكتب:",
+            options: [
+              "border: 2px solid Tomato;",
+              "border-style: 2px Tomato;",
+              "border: solid Tomato;",
+              "outline: 2px Tomato;"
+            ],
+            answer: 0,
+            explanation: "الاختصار الصحيح للحدود هو border: width style color; ويجب تحديد border-style ليظهر الحد."
+          },
+          {
+            type: "mcq",
+            q: "لتوسيط عنصر بلوك (مثل div له عرض محدد width: 500px) أفقياً في منتصف الحاوية، نستخدم:",
+            options: ["margin: auto;", "padding: center;", "align: middle;", "border: auto;"],
+            answer: 0,
+            explanation: "margin: auto يقوم بتوزيع الهوامش اليمنى واليسرى بالتساوي فيتوسط العنصر أفقياً."
+          },
+          {
+            type: "mcq",
+            q: "في جملة CSS التالية: color: blue; تُسمى كلمة color بـ:",
+            options: ["Selector", "Value", "Property", "Declaration Block"],
+            answer: 2,
+            explanation: "color هي الخاصية (Property) و blue هي القيمة (Value)."
+          },
+          {
+            type: "mcq",
+            q: "الترتيب الإجباري الصحيح لحالات الروابط الأربع في ملف CSS هو:",
+            options: [
+              "hover -> active -> link -> visited",
+              "link -> visited -> hover -> active",
+              "active -> hover -> visited -> link",
+              "visited -> hover -> link -> active"
+            ],
+            answer: 1,
+            explanation: "الترتيب القياسي المعروف بـ (LoVe HAte): link ثم visited ثم hover ثم active."
+          },
+          {
+            type: "mcq",
+            q: "إذا كتبنا margin: 25px 50px 75px; (ثلاث قيم)، فإن القيمة 50px تُطبق على:",
+            options: [
+              "الهامش العلوي فقط",
+              "الهامش الأيمن والأيسر معاً",
+              "الهامش السفلي فقط",
+              "الهامش العلوي والسفلي"
+            ],
+            answer: 1,
+            explanation: "في حالة 3 قيم: الأولى للأعلى (25px)، الثانية لليمين واليسار (50px)، والثالثة للأسفل (75px)."
+          },
+
+          // 2 Essay (Code Writing)
+          {
+            type: "essay",
+            q: "اكتب كود CSS يقوم بتجميع العناوين h1 و h2 لتأخذ محاذاة في المنتصف ولون أزرق، ويجعل العنصر ذو id='card' له إطار 2px متصل أخضر وحشوة داخلية (padding) بقيمة 15px.",
+            placeholder: "اكتب كود CSS هنا...",
+            modelAnswer: `h1, h2 {
+  text-align: center;
+  color: blue;
+}
+
+#card {
+  border: 2px solid green;
+  padding: 15px;
+}`
+          },
+          {
+            type: "essay",
+            q: "اكتب كود CSS لتنسيق الروابط بحيث يكون لون الرابط العادي والزار (link, visited) أخضر، وعند تمرير الماوس (hover) يصبح أحمر، وعند الضغط عليه (active) يصبح أصفر بالترتيب الصحيح.",
+            placeholder: "اكتب كود CSS هنا...",
+            modelAnswer: `a:link, a:visited {
+  color: green;
+}
+
+a:hover {
+  color: red;
+}
+
+a:active {
+  color: yellow;
+}`
+          }
+        ]
+      },
+
+      lec4: {
+        title: "المحاضرة الرابعة: Continue CSS",
+        desc: "خاصية العرض Display، إخفاء العناصر، المحددات التركيبية Combinators، والشفافية Opacity.",
+        questions: [
+          // 9 True / False
+          {
+            type: "tf",
+            q: "العنصر من نوع Block-level يبدأ دائماً في سطر جديد ويأخذ العرض الكامل المتاح له في الصفحة.",
+            answer: true,
+            explanation: "صحيح: عناصر مثل <div> و <p> و <h1> هي Block-level تبدأ في سطر جديد وتملأ العرض."
+          },
+          {
+            type: "tf",
+            q: "تُعتبر وسوم <a> و <img> و <span> من أمثلة عناصر الـ Block-level في HTML.",
+            answer: false,
+            explanation: "خطأ: هذه الوسوم الثلاثة هي أمثلة شهيرة لعناصر الـ Inline التي لا تبدأ في سطر جديد."
+          },
+          {
+            type: "tf",
+            q: "عند إخفاء عنصر باستخدام visibility: hidden; فإنه يختفي من الشاشة وتُحذف مساحته تماماً كأنه غير موجود.",
+            answer: false,
+            explanation: "خطأ: visibility: hidden يخفي العنصر مع الإبقاء على مساحته فارغة في التخطيط، أما display: none فيحذف المساحة."
+          },
+          {
+            type: "tf",
+            q: "يمكن تحويل عناصر القائمة <li> من عرض رأسي إلى قائمة أفقية (Horizontal Menu) باستخدام li { display: inline; }.",
+            answer: true,
+            explanation: "صحيح: تغيير display لعناصر <li> إلى inline يجعلها تصطف بجانب بعضها أفقياً."
+          },
+          {
+            type: "tf",
+            q: "المحدد التركيبي (div > p) يختار جميع فقرات <p> الموجودة داخل <div> سواء كانت أبناء مباشرين أو أحفاداً.",
+            answer: false,
+            explanation: "خطأ: علامة (>) تختار الأبناء المباشرين (Child) فقط، بينما المسافة (div p) تختار الأبناء والأحفاد."
+          },
+          {
+            type: "tf",
+            q: "المحدد (div + p) يختار أول فقرة <p> تأتي مباشرة بعد إغلاق عنصر <div> وتشترك معه في نفس الأب.",
+            answer: true,
+            explanation: "صحيح: علامة (+) هي Adjacent Sibling Selector وتستهدف العنصر الشقيق الملاصق مباشرة بعد العنصر الأول."
+          },
+          {
+            type: "tf",
+            q: "المحدد (div ~ p) يختار كل فقرات <p> الشقيقة التي تأتي بعد <div> حتى لو لم تكن ملاصقة له مباشرة.",
+            answer: true,
+            explanation: "صحيح: علامة (~) هي General Sibling Selector وتختار جميع الأشقاء اللاحقين في نفس المستوى."
+          },
+          {
+            type: "tf",
+            q: "تتراوح قيمة خاصية الشفافية (opacity) في CSS بين 0.0 و 1.0، والقيمة الافتراضية لأي عنصر هي 0.5.",
+            answer: false,
+            explanation: "خطأ: النطاق من 0.0 إلى 1.0 صحيح، ولكن القيمة الافتراضية للعناصر هي 1 (معتم تماماً)."
+          },
+          {
+            type: "tf",
+            q: "تغيير نوع عرض العنصر من inline إلى block في CSS لا يغير من طبيعة العنصر في HTML (لا يسمح بوضع عناصر block داخله).",
+            answer: true,
+            explanation: "صحيح: خاصية display تغير طريقة العرض البصري فقط، ولا تغير قواعد بنية HTML."
+          },
+
+          // 9 MCQ
+          {
+            type: "mcq",
+            q: "أي من العناصر التالية يُعد عنصر Block-level افتراضياً؟",
+            options: ["<span>", "<a>", "<section>", "<img>"],
+            answer: 2,
+            explanation: "<section> و <header> و <footer> و <div> و <form> كلها عناصر Block-level."
+          },
+          {
+            type: "mcq",
+            q: "ما هو الفارق الجوهري بين display: none و visibility: hidden؟",
+            options: [
+              "لا يوجد أي فرق بينهما",
+              "display: none يحذف مساحة العنصر من الصفحة، بينما visibility: hidden يبقي مساحته فارغة",
+              "visibility: hidden يحذف العنصر من كود HTML نهائياً",
+              "display: none يجعل العنصر نصف شفاف فقط"
+            ],
+            answer: 1,
+            explanation: "display: none يزيل العنصر من تدفق الصفحة ومساحتها، بينما visibility: hidden يجعله غير مرئي في مكانه."
+          },
+          {
+            type: "mcq",
+            q: "أي من المحددات التركيبية (Combinators) التالية يُسمى Descendant Selector ويختار كل العناصر المتداخلة؟",
+            options: ["div > p", "div + p", "div p", "div ~ p"],
+            answer: 2,
+            explanation: "المسافة الفارغة (div p) تمثل Descendant Selector وتختار كل فقرة <p> داخل <div> بأي مستوى."
+          },
+          {
+            type: "mcq",
+            q: "لجعل جميع الصور <img> في الصفحة تبدأ في سطر جديد وتأخذ سلوك عناصر البلوك، نكتب:",
+            options: [
+              "img { visibility: block; }",
+              "img { display: block; }",
+              "img { position: inline; }",
+              "img { float: block; }"
+            ],
+            answer: 1,
+            explanation: "إعطاء display: block لعنصر inline مثل <img> أو <span> يجعله يبدأ في سطر جديد."
+          },
+          {
+            type: "mcq",
+            q: "أي من قيم opacity التالية تجعل الصورة أكثر شفافية (أقرب للاختفاء)؟",
+            options: ["opacity: 1.0;", "opacity: 0.8;", "opacity: 0.5;", "opacity: 0.2;"],
+            answer: 3,
+            explanation: "كلما اقتربت القيمة من 0.0 زادت الشفافية؛ فـ 0.2 تعني 20% وضوح و80% شفافية."
+          },
+          {
+            type: "mcq",
+            q: "في الكود التالي: <div><p>A</p><section><p>B</p></section></div>، أي فقرة سيتغير لونها عند تطبيق div > p { color: red; }؟",
+            options: [
+              "الفقرة A والفقرة B معاً",
+              "الفقرة A فقط",
+              "الفقرة B فقط",
+              "لن تتأثر أي فقرة"
+            ],
+            answer: 1,
+            explanation: "الفقرة A هي ابن مباشر (Direct Child) لـ div، أما B فهي حفيدة داخل section فلن تتأثر بـ (>)."
+          },
+          {
+            type: "mcq",
+            q: "الرمز المستخدم لتمثيل محدد الأخ الشقيق العام (General Sibling Selector) في CSS هو:",
+            options: ["+", ">", "~", "*"],
+            answer: 2,
+            explanation: "علامة التلدة (~) تمثل General Sibling، بينما (+) تمثل Adjacent Sibling."
+          },
+          {
+            type: "mcq",
+            q: "لجعل الصورة نصف شفافة في الحالة العادية وتصبح واضحة تماماً عند تمرير الماوس عليها، نستخدم:",
+            options: [
+              "img { opacity: 0.5; } img:hover { opacity: 1.0; }",
+              "img { opacity: 1.0; } img:hover { opacity: 0.5; }",
+              "img { display: none; } img:hover { display: block; }",
+              "img { visibility: hidden; }"
+            ],
+            answer: 0,
+            explanation: "نعطيها opacity: 0.5 افتراضياً وعند :hover نرفع القيمة إلى 1.0."
+          },
+          {
+            type: "mcq",
+            q: "ما هو السلوك الافتراضي لعنصر من نوع Inline؟",
+            options: [
+              "يبدأ في سطر جديد ويقبل width و height",
+              "لا يبدأ في سطر جديد ويأخذ فقط العرض اللازم لمحتواه",
+              "يُخفي العناصر التي تليه",
+              "يأخذ 100% من عرض الشاشة"
+            ],
+            answer: 1,
+            explanation: "عناصر Inline تصطف بجانب بعضها في نفس السطر وتأخذ عرض محتواها فقط."
+          },
+
+          // 2 Essay (Code Writing)
+          {
+            type: "essay",
+            q: "اكتب كود CSS يقوم بتحويل عناصر القائمة <li> لتظهر أفقياً (inline)، ويُخفي العنصر ذو id='alert-box' مع الحفاظ على مساحته محجوزة في الصفحة.",
+            placeholder: "اكتب كود CSS هنا...",
+            modelAnswer: `li {
+  display: inline;
+}
+
+#alert-box {
+  visibility: hidden;
+}`
+          },
+          {
+            type: "essay",
+            q: "اكتب كود CSS يجعل لون خلفية أول فقرة <p> تأتي مباشرة بعد عنصر <div> باللون الأصفر (yellow)، ويجعل شفافية جميع الصور <img> بنسبة 50%.",
+            placeholder: "اكتب كود CSS هنا...",
+            modelAnswer: `div + p {
+  background-color: yellow;
+}
+
+img {
+  opacity: 0.5;
+}`
+          }
+        ]
+      },
+
+      final: {
+        title: "الامتحان الشامل للمادة (المراجعة النهائية)",
+        desc: "امتحان تجريبي مجمّع يحاكي اختبار نهاية الفصل الدراسي ويغطي المحاضرات الأربع بالكامل.",
+        questions: [
+          // 9 True / False (Mixed from all 4 lectures)
+          {
+            type: "tf",
+            q: "[محاضرة 1] يمثل تطوير الـ Back-End نسبة 80% من المجهود البرمجي ويكون غير مرئي للمستخدم النهائي.",
+            answer: true,
+            explanation: "صحيح: Back-End يمثل 80% من المجهود ويهتم بالخوادم وقواعد البيانات ومنطق العمل."
+          },
+          {
+            type: "tf",
+            q: "[محاضرة 1] إطار العمل Laravel يُستخدم لتطوير الواجهة الأمامية (Front-End) بلغة JavaScript.",
+            answer: false,
+            explanation: "خطأ: Laravel هو إطار عمل Back-End بلغة PHP."
+          },
+          {
+            type: "tf",
+            q: "[محاضرة 2] في نماذج HTML، تُستخدم الخاصية required أو same name لربط أزرار الـ Radio بحيث يُختار زر واحد فقط.",
+            answer: true,
+            explanation: "صحيح: اشتراك أزرار الـ Radio في نفس قيمة خاصية name يجعل الاختيار حصرياً لواحد فقط."
+          },
+          {
+            type: "tf",
+            q: "[محاضرة 2] يتم ربط ملف التنسيق الخارجي (External CSS) داخل وسم <body> باستخدام وسم <style>.",
+            answer: false,
+            explanation: "خطأ: يُربط داخل وسم <head> باستخدام <link rel='stylesheet' href='...'>."
+          },
+          {
+            type: "tf",
+            q: "[محاضرة 3] في CSS، المحدد #header يستهدف العنصر الذي يحمل السمة class='header'.",
+            answer: false,
+            explanation: "خطأ: علامة # تستهدف id='header'، أما الكلاس فيُستدعى بالنقطة (.header)."
+          },
+          {
+            type: "tf",
+            q: "[محاضرة 3] عند كتابة margin: 10px 20px; فإن الهامش العلوي والسفلي يكونان 10px والأيمن والأيسر 20px.",
+            answer: true,
+            explanation: "صحيح: القيمة الأولى للرأس والذيل (Top/Bottom) والثانية للجانبين (Right/Left)."
+          },
+          {
+            type: "tf",
+            q: "[محاضرة 3] يجب دائماً أن يأتي تنسيق a:active بعد تنسيق a:hover في ملف CSS لكي يعمل بشكل سليم.",
+            answer: true,
+            explanation: "صحيح: القاعدة تنص على أن a:active يجب أن يأتي بعد a:hover."
+          },
+          {
+            type: "tf",
+            q: "[محاضرة 4] خاصية display: none تخفي العنصر من الصفحة مع ترك مساحته فارغة في مكانها.",
+            answer: false,
+            explanation: "خطأ: display: none تحذف العنصر ومساحته تماماً، أما visibility: hidden فتترك مساحته."
+          },
+          {
+            type: "tf",
+            q: "[محاضرة 4] المحدد div ~ p يختار جميع فقرات <p> التي تأتي بعد <div> وتشترك معه في نفس المستوى (أشقاء لاحقين).",
+            answer: true,
+            explanation: "صحيح: رمز (~) هو General Sibling Selector."
+          },
+
+          // 9 MCQ (Mixed from all 4 lectures)
+          {
+            type: "mcq",
+            q: "[محاضرة 1] أي من التالي يُعد قاعدة بيانات NoSQL تعتمد على الوثائق؟",
+            options: ["MySQL", "PostgreSQL", "MongoDB", "Apache"],
+            answer: 2,
+            explanation: "MongoDB هي قاعدة بيانات NoSQL، بينما MySQL و PostgreSQL علائقية، و Apache خادم ويب."
+          },
+          {
+            type: "mcq",
+            q: "[محاضرة 1] ما وظيفة المتصفح عند استلام كود HTML من الخادم؟",
+            options: [
+              "تخزين البيانات في MySQL",
+              "بناء شجرة الـ DOM وتطبيق تنسيقات CSS لعرض الصفحة",
+              "تشغيل كود PHP",
+              "إنشاء API جديد"
+            ],
+            answer: 1,
+            explanation: "المتصفح يفسر HTML لبناء الـ DOM ثم يطبق CSS ويشغل JavaScript."
+          },
+          {
+            type: "mcq",
+            q: "[محاضرة 2] لفتح رابط خارجي في تبويب جديد عند النقر عليه، نضيف للوسم <a> الخاصية:",
+            options: ["href='_new'", "target='_blank'", "target='_self'", "rel='tab'"],
+            answer: 1,
+            explanation: "target='_blank' يفتح الرابط في تبويب أو نافذة جديدة."
+          },
+          {
+            type: "mcq",
+            q: "[محاضرة 2] ما هو الوسم المستخدم لإنشاء خلية بيانات عادية داخل صف الجدول؟",
+            options: ["<tr>", "<th>", "<td>", "<tc>"],
+            answer: 2,
+            explanation: "<td> (Table Data) تُستخدم لخلايا البيانات داخل صف <tr>."
+          },
+          {
+            type: "mcq",
+            q: "[محاضرة 3] عنصر <div> له width: 200px، padding: 10px، border: 5px solid red، margin: 20px. كم يبلغ العرض الكلي (Total Width)؟",
+            options: ["235px", "270px", "250px", "230px"],
+            answer: 1,
+            explanation: "200 + (10×2) + (5×2) + (20×2) = 200 + 20 + 10 + 40 = 270px."
+          },
+          {
+            type: "mcq",
+            q: "[محاضرة 3] أي من المحددات التالية يطبق التنسيق فقط على وسوم <h1> التي تحمل الكلاس title؟",
+            options: ["h1, .title", "h1.title", "#title h1", "h1 > .title"],
+            answer: 1,
+            explanation: "دمج اسم الوسم مع النقطة واسم الكلاس (h1.title) يخصص التنسيق لهذا النوع من العناصر فقط."
+          },
+          {
+            type: "mcq",
+            q: "[محاضرة 4] أي من العناصر التالية يُصنف كعنصر Inline افتراضياً؟",
+            options: ["<div>", "<p>", "<span>", "<header>"],
+            answer: 2,
+            explanation: "<span> هو عنصر Inline لا يبدأ في سطر جديد."
+          },
+          {
+            type: "mcq",
+            q: "[محاضرة 4] لاختيار الأبناء المباشرين من نوع <p> الموجودين داخل عنصر <div> فقط، نكتب:",
+            options: ["div p", "div > p", "div + p", "div ~ p"],
+            answer: 1,
+            explanation: "المحدد (>) يختار الأبناء المباشرين (Direct Children) فقط."
+          },
+          {
+            type: "mcq",
+            q: "[محاضرة 4] ما هي قيمة opacity التي تجعل العنصر معتماً بالكامل (غير شفاف)؟",
+            options: ["0.0", "0.5", "1.0", "100"],
+            answer: 2,
+            explanation: "القيمة 1.0 (أو 1) تعني معتم تماماً وهي القيمة الافتراضية."
+          },
+
+          // 2 Essay (Comprehensive Code Writing)
+          {
+            type: "essay",
+            q: "اكتب صفحة HTML كاملة تحتوي على: (1) Internal CSS يجعل خلفية الصفحة lightgray ويجعل عناصر القائمة <li> تظهر أفقياً (inline). (2) في الـ body قائمة غير مرتبة <ul> بها رابطان (Home) و (Doctors).",
+            placeholder: "اكتب الكود الكامل هنا...",
+            modelAnswer: `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      background-color: lightgray;
+    }
+    li {
+      display: inline;
+    }
+  </style>
+</head>
+<body>
+  <ul>
+    <li><a href="#home">Home</a></li>
+    <li><a href="#doctors">Doctors</a></li>
+  </ul>
+</body>
+</html>`
+          },
+          {
+            type: "essay",
+            q: "اكتب كود CSS يقوم بتنسيق عنصر <div> ليكون عرضه 300px، وحشوته الداخلية (padding) 20px، وحدوده 5px متصلة زرقاء، وهامشه الخارجي (margin) 10px، ثم اكتب في تعليق CSS كم يساوي العرض الكلي (Total Width) لهذا العنصر.",
+            placeholder: "اكتب كود CSS والحساب هنا...",
+            modelAnswer: `div {
+  width: 300px;
+  padding: 20px;
+  border: 5px solid blue;
+  margin: 10px;
+}
+
+/* Total Width = 300 + (20*2) + (5*2) + (10*2) = 370px */`
+          }
+        ]
+      }
+    };
+
+    // ============================================================================
+    // APPLICATION STATE
+    // ============================================================================
+    const tabs = [
+      { id: 'lec1', label: 'المحاضرة 1 (Web Dev)' },
+      { id: 'lec2', label: 'المحاضرة 2 (HTML5 & CSS)' },
+      { id: 'lec3', label: 'المحاضرة 3 (Intro CSS)' },
+      { id: 'lec4', label: 'المحاضرة 4 (Continue CSS)' },
+      { id: 'final', label: 'الامتحان الشامل للمادة' }
+    ];
+
+    let currentTab = 'lec1';
+
+    // Store user answers per tab: { lec1: { 0: true, 9: 2, 18: { code: "...", revealed: true, selfCorrect: true } } }
+    const userState = {
+      lec1: {},
+      lec2: {},
+      lec3: {},
+      lec4: {},
+      final: {}
+    };
+
+    // ============================================================================
+    // INITIALIZATION & RENDERING
+    // ============================================================================
+    function init() {
+      renderTabs();
+      renderQuiz();
+    }
+
+    function renderTabs() {
+      const container = document.getElementById('tabs-container');
+      container.innerHTML = tabs.map(tab => {
+        const isActive = tab.id === currentTab;
+        const score = calculateScore(tab.id).score;
+        return `
+          <button onclick="switchTab('${tab.id}')"
+            class="px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              isActive
+                ? 'tab-active'
+                : 'bg-white/10 text-sky-100 hover:bg-white/20'
+            }">
+            <span>${tab.label}</span>
+            <span class="text-xs px-2 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-black/20 text-sky-200'}">
+              ${score}/20
+            </span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function switchTab(tabId) {
+      currentTab = tabId;
+      renderTabs();
+      renderQuiz();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderQuiz() {
+      const section = quizData[currentTab];
+      document.getElementById('section-title').textContent = section.title;
+      document.getElementById('section-desc').textContent = section.desc;
+
+      const container = document.getElementById('questions-container');
+      container.innerHTML = '';
+
+      section.questions.forEach((item, index) => {
+        const saved = userState[currentTab][index];
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-6 transition-all hover:shadow-md";
+
+        // Badge label & color
+        let badgeHtml = '';
+        if (item.type === 'tf') {
+          badgeHtml = `<span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-lg">سؤال ${index + 1} • صح أم خطأ</span>`;
+        } else if (item.type === 'mcq') {
+          badgeHtml = `<span class="bg-sky-100 text-sky-800 text-xs font-bold px-2.5 py-1 rounded-lg">سؤال ${index + 1} • اختيار من متعدد</span>`;
+        } else {
+          badgeHtml = `<span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-lg">سؤال ${index + 1} • مقالي (كتابة كود)</span>`;
+        }
+
+        let bodyHtml = '';
+
+        // 1. TRUE / FALSE RENDER
+        if (item.type === 'tf') {
+          const isAnswered = saved !== undefined;
+          const isCorrect = isAnswered && saved === item.answer;
+
+          bodyHtml = `
+            <div class="grid grid-cols-2 gap-3 mt-4 max-w-md">
+              ${[true, false].map(val => {
+                const label = val ? '✓ صح (True)' : '✗ خطأ (False)';
+                let btnClass = "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700";
+                
+                if (isAnswered) {
+                  if (val === item.answer) {
+                    btnClass = "border-emerald-500 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500/30";
+                  } else if (val === saved && saved !== item.answer) {
+                    btnClass = "border-rose-500 bg-rose-50 text-rose-800 ring-2 ring-rose-500/30";
+                  } else {
+                    btnClass = "border-slate-200 bg-slate-50 text-slate-400 opacity-60";
+                  }
+                }
+
+                return `
+                  <button onclick="answerTF(${index}, ${val})"
+                    class="py-3 px-4 rounded-xl border-2 font-bold text-sm transition cursor-pointer ${btnClass}">
+                    ${label}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+            ${isAnswered ? `
+              <div class="mt-4 p-3.5 rounded-xl text-sm ${isCorrect ? 'bg-emerald-50 border border-emerald-200 text-emerald-900' : 'bg-rose-50 border border-rose-200 text-rose-900'}">
+                <span class="font-bold">${isCorrect ? 'إجابة صحيحة! 👏' : 'إجابة غير صحيحة! 💡'}</span>
+                <span class="mr-1">${escapeHtml(item.explanation)}</span>
+              </div>
+            ` : ''}
+          `;
+        }
+
+        // 2. MCQ RENDER
+        else if (item.type === 'mcq') {
+          const isAnswered = saved !== undefined;
+          const isCorrect = isAnswered && saved === item.answer;
+
+          bodyHtml = `
+            <div class="space-y-2.5 mt-4">
+              ${item.options.map((opt, optIdx) => {
+                let btnClass = "border-slate-200 bg-slate-50 hover:bg-sky-50/60 hover:border-sky-300 text-slate-700";
+                
+                if (isAnswered) {
+                  if (optIdx === item.answer) {
+                    btnClass = "border-emerald-500 bg-emerald-50 text-emerald-900 ring-2 ring-emerald-500/30";
+                  } else if (optIdx === saved && saved !== item.answer) {
+                    btnClass = "border-rose-500 bg-rose-50 text-rose-900 ring-2 ring-rose-500/30";
+                  } else {
+                    btnClass = "border-slate-200 bg-slate-50 text-slate-400 opacity-65";
+                  }
+                }
+
+                return `
+                  <button onclick="answerMCQ(${index}, ${optIdx})"
+                    class="w-full text-right py-3 px-4 rounded-xl border-2 font-semibold text-sm transition flex items-center justify-between gap-3 cursor-pointer ${btnClass}">
+                    <span dir="auto">${escapeHtml(opt)}</span>
+                    ${isAnswered && optIdx === item.answer ? '<span class="text-emerald-600 font-bold text-xs shrink-0">✓ الإجابة الصحيحة</span>' : ''}
+                    ${isAnswered && optIdx === saved && saved !== item.answer ? '<span class="text-rose-600 font-bold text-xs shrink-0">✗ اختيارك</span>' : ''}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+            ${isAnswered ? `
+              <div class="mt-4 p-3.5 rounded-xl text-sm ${isCorrect ? 'bg-emerald-50 border border-emerald-200 text-emerald-900' : 'bg-rose-50 border border-rose-200 text-rose-900'}">
+                <span class="font-bold">${isCorrect ? 'أحسنت! 👏' : 'توضيح الإجابة: 💡'}</span>
+                <span class="mr-1">${escapeHtml(item.explanation)}</span>
+              </div>
+            ` : ''}
+          `;
+        }
+
+        // 3. ESSAY (CODE WRITING) RENDER
+        else if (item.type === 'essay') {
+          const essayState = saved || { code: '', revealed: false, selfCorrect: null };
+
+          bodyHtml = `
+            <div class="mt-4 space-y-3">
+              <label class="block text-xs font-bold text-slate-500">اكتب الكود الخاص بك في المحرر التالي:</label>
+              <textarea
+                rows="5"
+                oninput="updateEssayCode(${index}, this.value)"
+                placeholder="${item.placeholder}"
+                class="code-font w-full rounded-xl bg-slate-900 text-emerald-300 p-4 text-sm border border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              >${escapeHtml(essayState.code)}</textarea>
+
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <button onclick="toggleEssayAnswer(${index})"
+                  class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition shadow-sm cursor-pointer">
+                  ${essayState.revealed ? 'إخفاء الإجابة النموذجية' : 'عرض الإجابة النموذجية وتقييم نفسي'}
+                </button>
+              </div>
+
+              ${essayState.revealed ? `
+                <div class="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-sky-800">الكود النموذجي الصحيح:</span>
+                    <button onclick="copyModelAnswer(${index})" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-2.5 py-1 rounded-lg transition cursor-pointer">
+                      نسخ الكود
+                    </button>
+                  </div>
+                  <pre class="code-font bg-slate-900 text-sky-300 p-3.5 rounded-xl text-xs overflow-x-auto leading-relaxed">${escapeHtml(item.modelAnswer)}</pre>
+                  
+                  <!-- Self Grading Controls -->
+                  <div class="pt-2 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span class="text-xs font-bold text-slate-700">قارن كودك بالنموذج أعلاه واحسب درجتك:</span>
+                    <div class="flex gap-2">
+                      <button onclick="gradeEssay(${index}, true)"
+                        class="px-3 py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer ${
+                          essayState.selfCorrect === true
+                            ? 'bg-emerald-600 text-white border-emerald-600'
+                            : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50'
+                        }">
+                        ✓ كودي صحيح (+1 درجة)
+                      </button>
+                      <button onclick="gradeEssay(${index}, false)"
+                        class="px-3 py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer ${
+                          essayState.selfCorrect === false
+                            ? 'bg-rose-600 text-white border-rose-600'
+                            : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50'
+                        }">
+                        ✗ يحتاج مراجعة (0 درجة)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2 mb-3">
+            ${badgeHtml}
+          </div>
+          <h3 class="text-base md:text-lg font-bold text-slate-800 leading-relaxed">${escapeHtml(item.q)}</h3>
+          ${bodyHtml}
+        `;
+
+        container.appendChild(card);
+      });
+
+      updateStatsUI();
+    }
+
+    // ============================================================================
+    // INTERACTION HANDLERS
+    // ============================================================================
+    function answerTF(qIndex, value) {
+      userState[currentTab][qIndex] = value;
+      renderTabs();
+      renderQuiz();
+    }
+
+    function answerMCQ(qIndex, optionIndex) {
+      userState[currentTab][qIndex] = optionIndex;
+      renderTabs();
+      renderQuiz();
+    }
+
+    function updateEssayCode(qIndex, text) {
+      if (!userState[currentTab][qIndex]) {
+        userState[currentTab][qIndex] = { code: '', revealed: false, selfCorrect: null };
+      }
+      userState[currentTab][qIndex].code = text;
+    }
+
+    function toggleEssayAnswer(qIndex) {
+      if (!userState[currentTab][qIndex]) {
+        userState[currentTab][qIndex] = { code: '', revealed: false, selfCorrect: null };
+      }
+      userState[currentTab][qIndex].revealed = !userState[currentTab][qIndex].revealed;
+      renderQuiz();
+    }
+
+    function gradeEssay(qIndex, isCorrect) {
+      if (!userState[currentTab][qIndex]) {
+        userState[currentTab][qIndex] = { code: '', revealed: true, selfCorrect: null };
+      }
+      userState[currentTab][qIndex].selfCorrect = isCorrect;
+      renderTabs();
+      renderQuiz();
+    }
+
+    function copyModelAnswer(qIndex) {
+      const text = quizData[currentTab].questions[qIndex].modelAnswer;
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = text;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempTextArea);
+      showToast('تم نسخ الكود النموذجي إلى الحافظة!');
+    }
+
+    function resetCurrentQuiz() {
+      userState[currentTab] = {};
+      renderTabs();
+      renderQuiz();
+      showToast('تم إعادة تصفير أسئلة هذا القسم.');
+    }
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ============================================================================
+    // SCORING & UI HELPERS
+    // ============================================================================
+    function calculateScore(tabId) {
+      const questions = quizData[tabId].questions;
+      const state = userState[tabId];
+      let score = 0;
+      let answered = 0;
+
+      questions.forEach((q, idx) => {
+        const ans = state[idx];
+        if (q.type === 'tf' || q.type === 'mcq') {
+          if (ans !== undefined) {
+            answered++;
+            if (ans === q.answer) score++;
+          }
+        } else if (q.type === 'essay') {
+          if (ans && ans.selfCorrect !== null && ans.selfCorrect !== undefined) {
+            answered++;
+            if (ans.selfCorrect === true) score++;
+          }
+        }
+      });
+
+      return { score, answered, total: questions.length };
+    }
+
+    function updateStatsUI() {
+      const { score, answered, total } = calculateScore(currentTab);
+      document.getElementById('header-score').textContent = `${score} / ${total}`;
+      document.getElementById('header-answered').textContent = `${answered} / ${total}`;
+      document.getElementById('footer-score').textContent = `${score} / ${total}`;
+
+      const pct = Math.round((answered / total) * 100);
+      document.getElementById('progress-bar').style.width = `${pct}%`;
+
+      const gradeEl = document.getElementById('footer-grade');
+      if (answered < total) {
+        gradeEl.textContent = `متبقي ${total - answered} سؤال`;
+        gradeEl.className = "text-lg font-bold text-slate-500";
+      } else {
+        if (score >= 18) {
+          gradeEl.textContent = "ممتاز (A+) 🌟";
+          gradeEl.className = "text-lg font-bold text-emerald-600";
+        } else if (score >= 15) {
+          gradeEl.textContent = "جيد جداً (B+) 👏";
+          gradeEl.className = "text-lg font-bold text-sky-600";
+        } else if (score >= 12) {
+          gradeEl.textContent = "جيد (C) 👍";
+          gradeEl.className = "text-lg font-bold text-amber-600";
+        } else {
+          gradeEl.textContent = "يحتاج مراجعة 📖";
+          gradeEl.className = "text-lg font-bold text-rose-600";
+        }
+      }
+    }
+
+    function escapeHtml(str) {
+      if (typeof str !== 'string') return '';
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+
+    // Start App
+    window.onload = init;
+  </script>
+</body>
+</html>
